@@ -1,6 +1,8 @@
 {
   "project_info": {
     "project_number": "674409017420",
+    "firebase_url": "https://live-stream-demo-448f7-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "database_url": "https://live-stream-demo-448f7-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "live-stream-demo-448f7",
     "storage_bucket": "live-stream-demo-448f7.appspot.com"
   },

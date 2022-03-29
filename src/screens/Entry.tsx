@@ -33,7 +33,10 @@ const Entry = () => {
         navigate('/home');
       }}
     >
-      <View style={styles.textButton}>
+      <View style={[
+        styles.textButton,
+        styles.viewerButton
+      ]}>
         <Text style={styles.buttonText}>
         Viewer
         </Text>
@@ -59,9 +62,13 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     borderRadius: 8
   },
+  viewerButton: {
+    backgroundColor: Colors.Green
+  },
   buttonText: {
     textAlign: 'center',
     fontWeight: '900',
+    color: Colors.White,
     fontSize: 20
   }
 })

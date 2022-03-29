@@ -34,3 +34,4 @@ export const addGroupItem = async (doc: FirebaseFirestoreTypes.DocumentSnapshot,
 
 export const updateGroupItem = async (doc: FirebaseFirestoreTypes.DocumentSnapshot, status: VideoStatus) =>
   await doc.ref.set({ status }, { merge: true });
+

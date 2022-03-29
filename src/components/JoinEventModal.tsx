@@ -3,7 +3,7 @@ import { Button, StyleSheet, Image, View, Text } from "react-native";
 import { DataTable } from 'react-native-paper';
 import { useNavigate } from "react-router";
 import Colors from "../constant/colors";
-import GroupContentModel from "../models/GroupContentModel";
+import GroupContentModel, { VideoStatus } from "../models/GroupContentModel";
 import BaseModal, { BaseModalProps } from "./BaseModal";
 import ModalHeader from "./ModalHeader";
 import { useRoleContext } from "./RoleProvider";
@@ -92,6 +92,7 @@ const JoinEventModal = ({
       />
         ) :
         <Button
+          disabled={content.status === VideoStatus.NotConnected}
           onPress={() => {
             navigate('/join', {
               state: content.doc

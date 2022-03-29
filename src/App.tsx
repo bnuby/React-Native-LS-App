@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import { Switch } from 'react-native';
 import { NativeRouter, Route, Routes } from 'react-router-native';
-import {check, checkMultiple, PERMISSIONS, request, RESULTS} from 'react-native-permissions';
+import {check, checkMultiple, PERMISSIONS, request, requestMultiple, RESULTS} from 'react-native-permissions';
 import { useImmer } from 'use-immer';
 import ListItem from './components/ListItem';
 import Colors from './constant/colors';
@@ -47,26 +47,34 @@ const Section: React.FC<{
   );
 };
 
-const requestPermission = (permission: Permission) => {
-request(permission)
+const requestPermissions = () => {
+requestMultiple([
+  PERMISSIONS.ANDROID.CAMERA,
+  PERMISSIONS.ANDROID.RECORD_AUDIO,
+  PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+  PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+])
   .then(result => {
-    switch (result) {
-      case RESULTS.UNAVAILABLE:
-        console.log('This feature is not available (on this device / in this context)');
-        break;
-      case RESULTS.DENIED:
-        console.log('The permission has not been requested / is denied but requestable');
-        break;
-      case RESULTS.LIMITED:
-        console.log('The permission is limited: some actions are possible');
-        break;
-      case RESULTS.GRANTED:
-        console.log('The permission is granted');
-        break;
-      case RESULTS.BLOCKED:
-        console.log('The permission is denied and not requestable anymore');
-        break;
-    }
+    Object.entries(result).map((params: unknown) => {
+      const [key, permission] = params as [Permission, string];
+      switch (permission) {
+        case RESULTS.UNAVAILABLE:
+          console.log(permission, 'This feature is not available (on this device / in this context)');
+          break;
+        case RESULTS.DENIED:
+          console.log(permission, 'The permission has not been requested / is denied but requestable');
+          break;
+        case RESULTS.LIMITED:
+          console.log(permission, 'The permission is limited: some actions are possible');
+          break;
+        case RESULTS.GRANTED:
+          console.log(permission, 'The permission is granted');
+          break;
+        case RESULTS.BLOCKED:
+          console.log(permission, 'The permission is denied and not requestable anymore');
+          break;
+      }
+    })
   })
 }
 
@@ -82,21 +90,21 @@ const checkPermission = () => {
       const [key, permission] = params as [Permission, string];
       switch (permission) {
         case RESULTS.UNAVAILABLE:
-          console.log('This feature is not available (on this device / in this context)');
+          console.log(permission, 'This feature is not available (on this device / in this context)');
           break;
         case RESULTS.DENIED:
-          console.log('The permission has not been requested / is denied but requestable');
-          requestPermission(key);
+          console.log(permission, 'The permission has not been requested / is denied but requestable');
+          requestPermissions();
           break;
         case RESULTS.LIMITED:
-          console.log('The permission is limited: some actions are possible');
-          requestPermission(key);
+          console.log(permission, 'The permission is limited: some actions are possible');
+          requestPermissions();
           break;
         case RESULTS.GRANTED:
-          console.log('The permission is granted');
+          console.log(permission, 'The permission is granted');
           break;
         case RESULTS.BLOCKED:
-          console.log('The permission is denied and not requestable anymore');
+          console.log(permission, 'The permission is denied and not requestable anymore');
           break;
       }
     })

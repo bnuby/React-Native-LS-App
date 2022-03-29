@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Button, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Button, Dimensions, KeyboardAvoidingView, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useLocation, useNavigate } from 'react-router';
 import { useImmer } from 'use-immer';
 // @ts-ignore
@@ -10,10 +10,15 @@ import { LiveStreamMethods, LiveStreamView } from '@api.video/react-native-lives
 import Colors from '../../constant/colors';
 import GroupContentModel, { VideoStatus } from '../../models/GroupContentModel';
 import { updateGroupItem } from '../../service/groupService';
+import { initialChat, sendChat, subscribeChatAdded, subscribeChatValueChange } from '../../service/chatService';
+import ChatboxComponent from '../../components/ChatboxComponent';
+import ChatModel from '../../models/ChatModel';
+import ChatComponent from '../../components/ChatComponent';
 
 interface HostStreamState {
   content: FirebaseFirestoreTypes.DocumentSnapshot;
-  chats: string[];
+  chats: ChatModel[];
+  showChat: boolean,
   isLive: boolean;
   isFront: boolean;
 };
@@ -21,16 +26,22 @@ interface HostStreamState {
 const HostStream = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isNew = useRef(true);
   const [state, setState] = useImmer<HostStreamState>({
     content: location.state as FirebaseFirestoreTypes.DocumentSnapshot,
     chats: [],
+    showChat: false,
     isLive: false,
     isFront: true
   })
-  // const vb = useRef<any>();
+
+  useEffect(() => {
+    setState(draft => {
+      draft.chats = [];
+    })
+  }, []);
 
   const ref = useRef<LiveStreamMethods>(null);
-
   const rtmps = useMemo(() => {
     if (state?.content?.data()) {
       return state.content.data()!['rtmps'];
@@ -38,13 +49,13 @@ const HostStream = () => {
     return null;
   }, [state.content]);
 
+  // Initial video
   const initialVideo = async (data:GroupContentModel ) => {
     const groupId = state.content.ref.parent.parent!.id;
     functions()
       .httpsCallable('ManualGenerateVideoLink')({ groupId, contentId: data.id, name: data.name })
       .then(async response => {
         // after create refetch data
-        console.log(response);
         const newData = await state.content.ref.get();
         setState(draft => {
           draft.content = newData;
@@ -54,48 +65,63 @@ const HostStream = () => {
         console.error(e);
       });
   };
-  console.log({
-    rtmps
-  });
 
+  const group = useMemo(() => GroupContentModel.fromData(state.content), [state.content]);
   useEffect(() => {
     // if videoId not found create the video link
-    const data = GroupContentModel.fromData(state.content);
-    if (!data.videoId) {
-      initialVideo(data);
+    let unsubscribe: Function | null = null
+    if (!group?.videoId) {
+      initialVideo(group);
+    } else {
+      initialChat(group.videoId);
+      unsubscribe = subscribeChatAdded(group.videoId, snapshot => {
+        const data = snapshot.val();
+        if (!isNew.current) {
+          setState(draft => {
+            draft.chats.push(ChatModel.fromData(snapshot))
+          })
+        }
+      });
+      subscribeChatValueChange(group.videoId, () => {
+        isNew.current = false;
+        console.log('value changes');
+      });
     }
-  }, [state.content])
+    return () => {
+      if (unsubscribe) unsubscribe();
+    }
+  }, [state.content, group])
   
   return <SafeAreaView style={styles.container}>
-    <View>
-
+    <KeyboardAvoidingView enabled={false}>
       <LiveStreamView
-          style={styles.camera}
-          ref={ref}
-          camera={state.isFront ? 'front' : 'back'}
-          video={{
-            fps: 30,
-            resolution: '720p',
-            bitrate: 2*1024*1024, // # 2 Mbps
-          }}
-          audio={{
-            bitrate: 128000,
-            sampleRate: 44100,
-            isStereo: true,
-          }}
-          isMuted={false}
-          onConnectionSuccess={() => {
-            //do what you want
-          }}
-          onConnectionFailed={(e) => {
-            //do what you want
-          }}
-          onDisconnect={() => {
-            //do what you want
-            console.log('not connected');
-          }}
-        />
-    </View>
+        style={styles.camera}
+        ref={ref}
+        camera={state.isFront ? 'front' : 'back'}
+        video={{
+          fps: 30,
+          resolution: '720p',
+          bitrate: 2*1024*1024, // # 2 Mbps
+        }}
+        audio={{
+          bitrate: 128000,
+          sampleRate: 44100,
+          isStereo: true,
+        }}
+        isMuted={false}
+        onConnectionSuccess={() => {
+          //do what you want
+        }}
+        onConnectionFailed={(e) => {
+          //do what you want
+        }}
+        onDisconnect={() => {
+          //do what you want
+          console.log('not connected');
+        }}
+      />
+    </KeyboardAvoidingView>
+
     <Pressable
       style={[styles.roundButton, styles.backButton]}
       onPress={() => navigate('/home')}
@@ -105,59 +131,112 @@ const HostStream = () => {
       </View>
     </Pressable>
 
-    <View style={styles.streamButtonBlock}>
-      <Pressable
-        style={[
-          styles.roundButton,
-          state.isLive ? styles.stopStreamButton : styles.streamButton
-        ]}
-        onPress={() => {
-          if (ref.current) {
-            setState(draft => {
-              draft.isLive = !draft.isLive;
-              let result;
-              if (draft.isLive) {
-                ref.current?.startStreaming(rtmps.streamKey, rtmps.url);
-                updateGroupItem(draft.content as any, VideoStatus.Connected);
-              } else {
-                ref.current?.stopStreaming();
-                updateGroupItem(draft.content as any, VideoStatus.NotConnected);
+        {state.isLive ? 
+          <ChatComponent
+            chats={state.chats}
+          />
+        : null}
+
+    {
+      !state.showChat ? <>
+      <View style={styles.streamButtonBlock}>
+        <Pressable
+          style={[
+            styles.roundButton,
+            state.isLive ? styles.stopStreamButton : styles.streamButton
+          ]}
+          onPress={() => {
+            if (ref.current) {
+              setState(draft => {
+                draft.isLive = !draft.isLive;
+                let result;
+                if (draft.isLive) {
+                  ref.current?.startStreaming(rtmps.streamKey, rtmps.url);
+                  updateGroupItem(draft.content as any, VideoStatus.Connected);
+                } else {
+                  ref.current?.stopStreaming();
+                  updateGroupItem(draft.content as any, VideoStatus.NotConnected);
+                }
+              })
+            }
+          }}
+          >
+          <View>
+            <Text style={styles.buttonText}>
+              {
+                state.isLive ? "Stop": "Start"
               }
+            </Text>
+          </View>
+        </Pressable>
+      </View>
+
+
+      {
+        state.isLive ? 
+          <View style={styles.chatButton}>
+            <Pressable
+              style={[
+                styles.roundButton,
+                {
+                  backgroundColor: Colors.Green
+                }
+              ]}
+              onPress={() => {
+                setState(draft => {
+                  draft.showChat = !draft.showChat;
+                })
+              }}
+              >
+              <View>
+                <Text style={styles.buttonText}>
+                  Chat
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        : null
+      }
+
+
+      <View style={styles.switchCamera}>
+        <Pressable
+          style={[styles.roundButton]}
+          disabled={!rtmps}
+          onPress={() => {
+            setState(draft => {
+              draft.isFront = !draft.isFront;
             })
+          }}
+          >
+          <View>
+            <Text style={styles.buttonText}>
+              {
+                state.isFront ? "Front": "Back"
+              }
+            </Text>
+          </View>
+        </Pressable>
+      </View>
+      </> : null  
+    }
+
+    {
+      state.showChat ? 
+      <ChatboxComponent
+        onMessage={async (val) => {
+          setState(draft => {
+            draft.showChat = !draft.showChat;
+          });
+          if (val && group.videoId) {
+            sendChat(group.videoId, val).then();
           }
         }}
-        >
-        <View>
-          <Text style={styles.buttonText}>
-            {
-              state.isLive ? "Stop": "Start"
-            }
-          </Text>
-        </View>
-      </Pressable>
-    </View>
+      /> : null
+    }
 
+    
 
-    <View style={styles.switchCamera}>
-      <Pressable
-        style={[styles.roundButton]}
-        disabled={!rtmps}
-        onPress={() => {
-          setState(draft => {
-            draft.isFront = !draft.isFront;
-            // vb.current.switchCamera();
-          })
-        }}
-        >
-        <View>
-          <Text style={styles.buttonText}>
-            {
-              state.isFront ? "Front": "Back"
-            }
-          </Text>
-        </View>
-      </Pressable>
-</View>
 
   </SafeAreaView>
 };
@@ -165,12 +244,12 @@ const HostStream = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    backgroundColor: Colors.White,
+    backgroundColor: Colors.Green,
     height: '100%'
   },
   camera: {
     width: '100%',
-    height: '100%'
+    height: Dimensions.get('window').height
   },
   roundButton: {
     display: 'flex',
@@ -208,6 +287,11 @@ const styles = StyleSheet.create({
   switchCamera: {
     position: 'absolute',
     right: 10,
+    bottom: 10,
+  },
+  chatButton: {
+    position: 'absolute',
+    left: 10,
     bottom: 10,
   }
 })

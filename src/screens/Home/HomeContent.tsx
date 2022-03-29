@@ -55,18 +55,14 @@ const HomeContent = ({
           </View>
         </ContentItem>);
       }),
-  ], [loading, state.itemWidth, contents]);
-
-  if (isStreamer) {
-    items.push(
-        <ContentItem width={state.itemWidth} 
-          disabled={loading}
-          onPress={onAddItemClick} 
-        >
-          <Text style={styles.buttonText} >ADD SECTION</Text>
-        </ContentItem>
-    )
-  }
+      isStreamer && 
+      <ContentItem width={state.itemWidth} 
+        disabled={loading}
+        onPress={onAddItemClick} 
+      >
+        <Text style={styles.buttonText} >ADD SECTION</Text>
+      </ContentItem>
+  ].filter(Boolean), [loading, state.itemWidth, contents]);
 
   const numColumns = 3;
 
@@ -132,10 +128,12 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   statusNotConntected: {
-    color: Colors.Red
+    color: Colors.Red,
+    fontWeight: '100'
   },
   statusConntected: {
-    color: Colors.Green
+    color: '#00CC00',
+    fontWeight: '100'
   },
   centerView: {
     height: "100%",

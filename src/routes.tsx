@@ -3,7 +3,7 @@ import Redirect from './components/Redirect';
 import Entry from './screens/Entry';
 import Home from "./screens/Home/Home";
 import HostStream from './screens/Stream/HostStream';
-import JoinStream from './screens/Stream/JoinStream';
+import JoinStream from './screens/Stream/Viewer/JoinStream';
 
 
 const ROUTES = [
