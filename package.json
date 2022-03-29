@@ -1,0 +1,80 @@
+{
+  "name": "livestream",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "web": "react-scripts start",
+    "test": "jest",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+  },
+  "dependencies": {
+    "@api.video/react-native-livestream": "^1.0.0",
+    "@cloudflare/stream-react": "^1.6.1",
+    "@firebase/auth": "^0.19.11",
+    "@firebase/firestore": "^3.4.7",
+    "@react-native-firebase/app": "^14.7.0",
+    "@react-native-firebase/firestore": "^14.7.0",
+    "@react-native-firebase/functions": "^14.7.0",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "firebase": "^9.6.10",
+    "immer": "^9.0.12",
+    "react": "17.0.2",
+    "react-dom": "^17.0.2",
+    "react-native": "0.67.4",
+    "react-native-nodemediaclient": "^0.2.18",
+    "react-native-paper": "^4.11.2",
+    "react-native-permissions": "^3.3.1",
+    "react-native-video": "^5.2.0",
+    "react-native-web": "^0.17.7",
+    "react-router": "^6.2.2",
+    "react-router-dom": "^6.2.2",
+    "react-router-native": "^6.2.2",
+    "react-scripts": "^5.0.0",
+    "use-immer": "^0.6.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.9",
+    "@babel/runtime": "^7.12.5",
+    "@react-native-community/eslint-config": "^2.0.0",
+    "@types/jest": "^26.0.23",
+    "@types/react-native": "^0.66.15",
+    "@types/react-test-renderer": "^17.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.7.0",
+    "@typescript-eslint/parser": "^5.7.0",
+    "babel-jest": "^26.6.3",
+    "eslint": "^7.14.0",
+    "jest": "^26.6.3",
+    "metro-react-native-babel-preset": "^0.66.2",
+    "react-test-renderer": "17.0.2",
+    "typescript": "^4.4.4"
+  },
+  "resolutions": {
+    "@types/react": "^17"
+  },
+  "jest": {
+    "preset": "react-native",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

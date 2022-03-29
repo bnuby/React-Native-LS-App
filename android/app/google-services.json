@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "674409017420",
+    "project_id": "live-stream-demo-448f7",
+    "storage_bucket": "live-stream-demo-448f7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674409017420:android:509e5b5357e71576c644e9",
+        "android_client_info": {
+          "package_name": "com.livestream"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "674409017420-2g3s6uk906sbr48114h90hnq9k91q9rh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZQ5WpOG-KJBUTOwAFyvnIGdemdT9ByoQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "674409017420-2g3s6uk906sbr48114h90hnq9k91q9rh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
